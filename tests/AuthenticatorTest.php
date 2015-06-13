@@ -133,4 +133,17 @@ class AuthenticatorTest extends PHPUnit_Framework_TestCase
             }
         );
     }
+
+    public function testTokenIsValidated()
+    {
+        $this->setExpectedExceptionRegExp(
+            'zacharyrankin\hmac_auth\AuthenticationException',
+            "/Invalid token./"
+        );
+        $auth = new Authenticator();
+        $auth->authenticate(
+            "",
+            function ($clientId) {}
+        );
+    }
 }

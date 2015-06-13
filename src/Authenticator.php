@@ -23,7 +23,13 @@ class Authenticator
     public function authenticate($token, callable $getClient, $expireSeconds = 300)
     {
         $token = explode(':', $token);
-        $version = $token[0];
+        if (count($token) !== 4) {
+            throw new AuthenticationException(
+                "Invalid token. Must have all 4 expected pieces"
+            );
+        }
+
+        list($version, $clientId, $timestamp, $signature) = $token;
 
         if ($version !== self::VERSION) {
             throw new AuthenticationException(
@@ -32,7 +38,6 @@ class Authenticator
             );
         }
 
-        $clientId = $token[1];
         $client = call_user_func($getClient, $clientId);
 
         if (!($client instanceof Client)) {
@@ -47,7 +52,6 @@ class Authenticator
             );
         }
 
-        $timestamp = $token[2];
         if (!is_numeric($timestamp)) {
             throw new AuthenticationException(
                 "Timestamp invalid. Timestamp must be a valid unix timestamp."
@@ -63,7 +67,6 @@ class Authenticator
             );
         }
 
-        $signature = $token[3];
         $verifyAuth = [
             'version'   => self::VERSION,
             'timestamp' => $timestamp,
